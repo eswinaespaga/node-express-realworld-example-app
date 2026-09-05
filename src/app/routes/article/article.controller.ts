@@ -1,3 +1,4 @@
+import prisma from '../../../prisma/prisma-client';
 import { NextFunction, Request, Response, Router } from 'express';
 import auth from '../auth/auth';
 import {
@@ -15,7 +16,29 @@ import {
 } from './article.service';
 
 const router = Router();
+/**
+ * LABORATORIO SQLi — ENDPOINT DELIBERADAMENTE VULNERABLE.
+ * Solo para demostración local. Debe eliminarse o corregirse tras la PoC.
+ *
+ * GET /api/lab/articles/search?q=texto
+ */
+router.get('/lab/articles/search', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const q = String(req.query.q ?? '');
 
+    const articles = await prisma.$queryRaw<
+      Array<{ id: number; title: string; slug: string; description: string }>
+    >`
+      SELECT id, title, slug, description
+      FROM Article
+      WHERE title LIKE ${`%${q}%`}
+    `;
+
+    res.status(200).json({ articles });
+  } catch (error) {
+    next(error);
+  }
+});
 /**
  * Get paginated articles
  * @auth optional

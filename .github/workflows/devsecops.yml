@@ -17,19 +17,33 @@ permissions:
 
 jobs:
   gitleaks:
-    name: Secret Scanning - Gitleaks
-    runs-on: ubuntu-latest
+  name: Secret Scanning - Gitleaks
+  runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
-      - name: Run Gitleaks
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Create lab Gitleaks rule
+      run: |
+        cat > .gitleaks.toml <<'EOF'
+        [extend]
+        useDefault = true
+
+        [[rules]]
+        id = "lab-demo-secret"
+        description = "Laboratory secret marker for CI/CD evidence"
+        regex = '''LAB_SECRET_[A-Z0-9]{20}'''
+        tags = ["key", "lab"]
+        EOF
+
+    - name: Run Gitleaks
+      uses: gitleaks/gitleaks-action@v2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITLEAKS_CONFIG: .gitleaks.toml
 
   semgrep:
     name: SAST - Semgrep

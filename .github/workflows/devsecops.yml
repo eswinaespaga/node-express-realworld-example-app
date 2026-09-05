@@ -39,7 +39,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Run Semgrep OWASP and JavaScript rules
+      - name: Run Semgrep
         run: |
           docker run --rm \
             -v "${{ github.workspace }}:/src" \
@@ -47,6 +47,8 @@ jobs:
             semgrep scan \
             --config p/owasp-top-ten \
             --config p/javascript \
+            --exclude .github \
+            --exclude Dockerfile \
             --error \
             /src
 

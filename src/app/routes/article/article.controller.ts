@@ -1,6 +1,7 @@
 import prisma from '../../../prisma/prisma-client';
 import { NextFunction, Request, Response, Router } from 'express';
 import auth from '../auth/auth';
+import requireRole from '../../middlewares/require-role';
 import {
   addComment,
   createArticle,
@@ -16,29 +17,24 @@ import {
 } from './article.service';
 
 const router = Router();
+
 /**
- * LABORATORIO SQLi — ENDPOINT DELIBERADAMENTE VULNERABLE.
- * Solo para demostración local. Debe eliminarse o corregirse tras la PoC.
+ * LABORATORIO JWT — ENDPOINT CORREGIDO.
+ * Requiere un JWT firmado mediante HS256 y validado por auth.required.
  *
- * GET /api/lab/articles/search?q=texto
+ * GET /api/lab/jwt/none
  */
-router.get('/lab/articles/search', async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const q = String(req.query.q ?? '');
+router.get(
+  '/lab/jwt/none',
+  auth.required,
+  (req: Request, res: Response) => {
+    return res.status(200).json({
+      message: 'JWT validated with HS256',
+      user: req.auth?.user,
+    });
+  },
+);
 
-    const articles = await prisma.$queryRaw<
-      Array<{ id: number; title: string; slug: string; description: string }>
-    >`
-      SELECT id, title, slug, description
-      FROM Article
-      WHERE title LIKE ${`%${q}%`}
-    `;
-
-    res.status(200).json({ articles });
-  } catch (error) {
-    next(error);
-  }
-});
 /**
  * Get paginated articles
  * @auth optional

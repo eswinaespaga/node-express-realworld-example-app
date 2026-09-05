@@ -40,3 +40,17 @@ testem.log
 Thumbs.db
 
 .nx/cache
+
+# Base de datos local de desarrollo
+src/prisma/dev.db
+src/prisma/dev.db-journal
+
+# Respaldos y scripts locales
+*.bak
+set-roles.ts
+src/prisma/migrations_postgresql_original/
+
+# Variables de entorno y secretos locales
+.env
+.env.*
+!.env.example
